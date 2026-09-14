@@ -42,3 +42,56 @@ h1{font-size:34px;margin:0 0 8px}.subtitle{color:#99a5bf}
 .score-card h2{margin:0}.score-value{font-size:28px;font-weight:900}
 @media(max-width:920px){.wheel-layout{grid-template-columns:1fr}#teamStatus{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){.app{flex-direction:column}.sidebar{width:100%;border-right:0;border-bottom:1px solid #2b3553}.home-buttons{grid-template-columns:1fr}main{padding:20px}.wheel-shell{transform:scale(.85);transform-origin:top center;margin-bottom:-55px}.wheel-legend{margin-top:10px}#teamStatus{grid-template-columns:1fr}}
+
+/* ===== VÒNG QUAY V3 ===== */
+.wheel-area{position:relative}
+.wheel-shell{position:relative}
+.wheel-shell::before{
+  content:"";
+  position:absolute;
+  inset:-18px;
+  border-radius:50%;
+  border:2px solid rgba(255,255,255,.14);
+  box-shadow:0 0 28px rgba(124,92,255,.28), inset 0 0 28px rgba(39,214,197,.08);
+  pointer-events:none;
+}
+.wheel-shell::after{
+  content:"";
+  position:absolute;
+  inset:-8px;
+  border-radius:50%;
+  background:conic-gradient(from 0deg, transparent 0 8%, rgba(255,255,255,.28) 10% 11%, transparent 13% 20%, rgba(255,255,255,.20) 22% 23%, transparent 25% 100%);
+  mix-blend-mode:screen;
+  animation:haloSpin 3s linear infinite;
+  pointer-events:none;
+}
+.wheel{will-change:transform}
+.wheel.spinning{
+  filter:brightness(1.12) saturate(1.18);
+}
+#wheelResult.result-win{
+  animation:resultPop .65s ease both;
+  box-shadow:0 0 30px rgba(124,92,255,.22);
+}
+.wheel-layout{overflow:visible}
+@keyframes haloSpin{to{transform:rotate(360deg)}}
+@keyframes resultPop{
+  0%{opacity:0;transform:translateY(10px) scale(.92)}
+  60%{opacity:1;transform:translateY(-3px) scale(1.04)}
+  100%{opacity:1;transform:translateY(0) scale(1)}
+}
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:50}
+.confetti i{
+  position:absolute;top:-20px;width:8px;height:14px;border-radius:2px;
+  animation:fall 1.9s linear forwards;
+}
+@keyframes fall{
+  to{transform:translate3d(var(--x),110vh,0) rotate(720deg);opacity:0}
+}
+.spin-flash{
+  animation:spinFlash .55s ease-in-out 0s 2 alternate;
+}
+@keyframes spinFlash{
+  from{box-shadow:0 20px 50px #0008}
+  to{box-shadow:0 0 70px rgba(124,92,255,.85),0 20px 50px #0008}
+}

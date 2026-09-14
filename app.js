@@ -58,7 +58,7 @@ const wheelItems=[
  {label:"TỔ 4\n−5",team:4,points:-5,type:"subtract",color:"#0d6688",desc:"Trừ 5 điểm của Tổ 4"},
 
  {label:"LẤY 5\nTỪ TỔ KHÁC",type:"takeOther",points:5,color:"#8e5cff",desc:"Tổ được chọn sẽ lấy 5 điểm từ một tổ khác"},
- {label:"TRAO ĐỔI\n5 ĐIỂM",type:"exchange",points:5,color:"#ff7a59",desc:"Chuyển 5 điểm giữa hai tổ"},
+ {label:"TRAO ĐỔI\n5 ĐIỂM",type:"exchange",points:5,color:"#ff7a59",desc:"Hệ thống random 2 tổ rồi chuyển 5 điểm giữa họ"},
  {label:"−10 ĐIỂM\nTỔ QUAY",team:null,points:-10,type:"subtractRandomTarget",color:"#9b315a",desc:"Một tổ ngẫu nhiên mất 10 điểm"},
  {label:"🎁 +10\nĐIỂM",team:null,points:10,type:"addRandomTarget",color:"#3f88c5",desc:"Một tổ ngẫu nhiên nhận 10 điểm"}
 ];
@@ -114,50 +114,93 @@ function applyWheelItem(item){
     scores[winner]+=actual;
     text=actual>0
       ? `🔄 Tổ ${winner} lấy ${actual} điểm từ Tổ ${other}!`
-      : `🔄 Tổ ${winner} được quyền lấy điểm, nhưng Tổ ${other} không có điểm để chuyển.`;
+      : `🔄 Tổ ${winner} được quyền lấy điểm từ Tổ ${other}, nhưng Tổ ${other} chưa có điểm.`;
   }else if(item.type==="exchange"){
+    // RANDOM 2 TỔ KHÁC NHAU
     const a=Math.floor(Math.random()*4)+1;
     const b=pickRandomOtherTeam(a);
-    const amount=Math.min(5,scores[a]);
-    scores[a]-=amount;scores[b]+=amount;
-    text=amount>0
-      ? `🔄 Trao đổi: chuyển ${amount} điểm từ Tổ ${a} sang Tổ ${b}!`
-      : `🔄 Tổ ${a} không có đủ điểm để trao đổi.`;
+    const transfer=Math.min(5,scores[a]);
+    scores[a]-=transfer;
+    scores[b]+=transfer;
+    text=transfer>0
+      ? `🔄 TRAO ĐỔI: Tổ ${a} → Tổ ${b}, chuyển ${transfer} điểm!`
+      : `🔄 TRAO ĐỔI: Tổ ${a} và Tổ ${b} được chọn, nhưng Tổ ${a} chưa có điểm để chuyển.`;
   }
-  save();updateScore();document.getElementById("wheelResult").textContent=text;
+  save();
+  updateScore();
+
+  const box=document.getElementById("wheelResult");
+  box.textContent=text;
+  box.classList.remove("result-win");
+  void box.offsetWidth;
+  box.classList.add("result-win");
+
+  launchConfetti();
 }
 
 function spinWheel(){
   if(spinning)return;
   spinning=true;
-  document.getElementById("spinButton").disabled=true;
+
+  const button=document.getElementById("spinButton");
+  const wheel=document.getElementById("prizeWheel");
+  const shell=document.querySelector(".wheel-shell");
+  const box=document.getElementById("wheelResult");
+
+  button.disabled=true;
+  button.textContent="⏳ ĐANG QUAY...";
+  wheel.classList.add("spinning");
+  shell.classList.add("spin-flash");
+  box.textContent="🎡 Vòng quay đang chạy...";
 
   const index=Math.floor(Math.random()*wheelItems.length);
   const slice=360/wheelItems.length;
 
-  // Mũi tên ở 12 giờ (0 độ). Đưa tâm ô thắng vào vị trí 12 giờ.
+  // Mũi tên ở 12 giờ; đưa tâm ô trúng về vị trí đó.
   const targetCenter=index*slice+slice/2;
   const normalized=(360-targetCenter+360)%360;
 
-  rotation += 360*6 + normalized;
-  document.getElementById("prizeWheel").style.transform=`rotate(${rotation}deg)`;
+  // Tạo số vòng khác nhau nhẹ để cảm giác tự nhiên hơn.
+  const fullTurns=6+Math.floor(Math.random()*3);
+  rotation += 360*fullTurns + normalized;
+
+  // Ép trình duyệt render trạng thái trước khi quay.
+  requestAnimationFrame(()=>{
+    wheel.style.transform=`rotate(${rotation}deg)`;
+  });
 
   setTimeout(()=>{
     applyWheelItem(wheelItems[index]);
+
+    wheel.classList.remove("spinning");
+    shell.classList.remove("spin-flash");
+    button.disabled=false;
+    button.textContent="🎡 QUAY";
     spinning=false;
-    document.getElementById("spinButton").disabled=false;
   },5600);
 }
 
-function updateScore(){
-  const max=Math.max(0,...Object.values(scores));
-  document.getElementById("scoreBoard").innerHTML=[1,2,3,4].map(t=>{
-    const leading=Number(scores[t])===max&&max>0;
-    return `<div class="score-card ${leading?'leading':''}"><h2>${leading?'🏆 ':''}Tổ ${t}</h2><div class="score-value">${scores[t]} điểm</div></div>`;
-  }).join("");
+function launchConfetti(){
+  const holder=document.getElementById("confetti");
+  if(!holder)return;
+  holder.innerHTML="";
+  const colors=["#7c5cff","#27d6c5","#ffd166","#ef476f","#ffffff","#06d6a0"];
+  for(let i=0;i<48;i++){
+    const p=document.createElement("i");
+    p.style.left=(Math.random()*100)+"vw";
+    p.style.background=colors[Math.floor(Math.random()*colors.length)];
+    p.style.setProperty("--x",((Math.random()-.5)*260)+"px");
+    p.style.animationDelay=(Math.random()*.35)+"s";
+    p.style.transform=`rotate(${Math.random()*360}deg)`;
+    holder.appendChild(p);
+  }
+  setTimeout(()=>holder.innerHTML="",2400);
 }
+
 document.addEventListener("keydown",e=>{
-  if(e.key==="1"){const page=document.querySelector(".page.active");if(page?.id==="wheelPage")spinWheel()}
+  const page=document.querySelector(".page.active");
+  if(page?.id!=="wheelPage")return;
+  if(e.key==="1" || e.key==="2") spinWheel();
 });
 
 loadQuestion();
