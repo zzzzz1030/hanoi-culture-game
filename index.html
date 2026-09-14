@@ -2,64 +2,79 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Hà Nội Culture Game</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="app">
-<aside class="sidebar">
-  <h2>🏯 Hà Nội<br>Culture Game</h2>
-  <button onclick="showPage('home')">🏠 Trang chủ</button>
-  <button onclick="showPage('quiz')">📝 Trắc nghiệm</button>
-  <button onclick="showPage('wheel')">🎡 Vòng quay điểm</button>
-  <button onclick="showPage('random')">🎯 Random người</button>
-  <button onclick="showPage('score')">🏆 Bảng điểm</button>
-</aside>
-
-<main>
-<section id="home" class="page active">
-  <h1>Khám phá văn hóa Hà Nội</h1>
-  <p>Học – Chơi – Thi đua</p>
-  <div class="home-buttons">
+  <aside class="sidebar">
+    <h2>🏯 Hà Nội<br><span>Culture Game</span></h2>
+    <button onclick="showPage('home')">🏠 Trang chủ</button>
     <button onclick="showPage('quiz')">📝 Trắc nghiệm</button>
+    <button onclick="showPage('wheelPage')">🎡 Vòng quay</button>
     <button onclick="showPage('random')">🎯 Random người</button>
-    <button onclick="showPage('wheel')">🎡 Vòng quay cộng điểm</button>
-  </div>
-</section>
+    <button onclick="showPage('score')">🏆 Bảng điểm</button>
+  </aside>
 
-<section id="quiz" class="page">
-  <h1>📝 Trắc nghiệm</h1>
-  <div id="questionBox"></div>
-  <div id="quizResult"></div>
-</section>
+  <main>
+    <section id="home" class="page active">
+      <h1>Khám phá văn hóa Hà Nội</h1>
+      <p class="subtitle">Học – Chơi – Thi đua</p>
+      <div class="home-buttons">
+        <button onclick="showPage('quiz')">📝 Trắc nghiệm</button>
+        <button onclick="showPage('random')">🎯 Random người</button>
+        <button onclick="showPage('wheelPage')">🎡 Vòng quay điểm</button>
+      </div>
+    </section>
 
-<section id="wheel" class="page">
-  <h1>🎡 Vòng quay cộng điểm</h1>
-  <p>Vòng quay có 8 ô: mỗi tổ có cơ hội nhận +5 hoặc +10 điểm.</p>
-  <div class="wheel-wrapper">
-    <div class="pointer">▼</div>
-    <div id="wheel" class="wheel"></div>
-  </div>
-  <button class="big-button" onclick="spinWheel()">QUAY</button>
-  <h2 id="wheelResult"></h2>
-</section>
+    <section id="quiz" class="page">
+      <h1>📝 Trắc nghiệm</h1>
+      <div id="questionBox"></div>
+      <div id="quizResult"></div>
+    </section>
 
-<section id="random" class="page">
-  <h1>🎯 Random người</h1>
-  <div id="teamStatus"></div>
-  <button class="big-button" onclick="randomPerson()">CHỌN NGƯỜI</button>
-  <div id="randomResult"></div>
-  <h2>Lịch sử</h2>
-  <div id="history"></div>
-</section>
+    <section id="wheelPage" class="page">
+      <h1>🎡 Vòng quay điểm</h1>
+      <p class="subtitle">Mỗi ô ghi rõ tác động: cộng, trừ, trao đổi hoặc lấy điểm từ tổ khác.</p>
 
-<section id="score" class="page">
-  <h1>🏆 Bảng điểm</h1>
-  <div id="scoreBoard"></div>
-</section>
-</main>
+      <div class="wheel-layout">
+        <div class="wheel-area">
+          <div class="pointer">▼</div>
+          <div class="wheel-shell">
+            <div id="prizeWheel" class="wheel"></div>
+          </div>
+          <button id="spinButton" class="big-button" onclick="spinWheel()">🎡 QUAY</button>
+        </div>
+
+        <div class="wheel-legend">
+          <h2>📜 Các ô trên vòng quay</h2>
+          <div id="wheelLegend"></div>
+        </div>
+      </div>
+
+      <div id="wheelResult" class="result-box">Chưa có kết quả.</div>
+    </section>
+
+    <section id="random" class="page">
+      <h1>🎯 Random người</h1>
+      <p class="subtitle">Hệ thống ưu tiên các tổ chưa đạt tối thiểu 2 người được gọi.</p>
+
+      <div id="teamStatus"></div>
+      <button class="big-button" onclick="randomPerson()">🎯 CHỌN NGƯỜI</button>
+      <div id="randomResult"></div>
+
+      <h2>📜 Lịch sử</h2>
+      <div id="history"></div>
+    </section>
+
+    <section id="score" class="page">
+      <h1>🏆 Bảng điểm</h1>
+      <div id="scoreBoard"></div>
+    </section>
+  </main>
 </div>
+
 <script src="app.js"></script>
 </body>
 </html>
