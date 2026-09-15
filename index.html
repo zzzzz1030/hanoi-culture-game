@@ -38,12 +38,17 @@
         <div class="wheel-area">
           <div class="pointer">▼</div>
           <div class="wheel-shell"><div id="prizeWheel" class="wheel"></div></div>
-          <button id="spinButton" class="big-button" onclick="spinWheel()">🎡 QUAY</button>
+          <button id="spinButton" class="big-button" onclick="window.spinWheel()">🎡 QUAY</button>
         </div>
         <div class="wheel-legend">
           <h2>📜 Các ô trên vòng quay</h2>
           <div id="wheelLegend"></div>
         </div>
+      </div>
+      <div id="correctTeamStatus" class="correct-team-status"></div>
+      <div id="wheelScorePanel" class="wheel-score-panel">
+        <h2>🏆 Bảng điểm các tổ</h2>
+        <div id="wheelScoreboard" class="wheel-scoreboard"></div>
       </div>
       <div id="wheelResult" class="result-box">Chưa có kết quả.</div>
       <div id="confetti" class="confetti" aria-hidden="true"></div>
@@ -64,6 +69,6 @@
   </main>
 </div>
 <script src="app.js"></script>
-<script src="wheel-fix.js?v=20260915-2"></script>
+<script src="wheel-fix.js?v=20260915-4"></script>
 </body>
 </html>
