@@ -16,7 +16,6 @@
     <button onclick="showPage('random')">🎯 Random người</button>
     <button onclick="showPage('score')">🏆 Bảng điểm</button>
   </aside>
-
   <main>
     <section id="home" class="page active">
       <h1>Khám phá văn hóa Hà Nội</h1>
@@ -27,55 +26,44 @@
         <button onclick="showPage('wheelPage')">🎡 Vòng quay điểm</button>
       </div>
     </section>
-
     <section id="quiz" class="page">
       <h1>📝 Trắc nghiệm</h1>
       <div id="questionBox"></div>
       <div id="quizResult"></div>
     </section>
-
     <section id="wheelPage" class="page">
       <h1>🎡 Vòng quay điểm</h1>
       <p class="subtitle">Mỗi ô ghi rõ tác động: cộng, trừ, trao đổi hoặc lấy điểm từ tổ khác.</p>
-
       <div class="wheel-layout">
         <div class="wheel-area">
           <div class="pointer">▼</div>
-          <div class="wheel-shell">
-            <div id="prizeWheel" class="wheel"></div>
-          </div>
+          <div class="wheel-shell"><div id="prizeWheel" class="wheel"></div></div>
           <button id="spinButton" class="big-button" onclick="spinWheel()">🎡 QUAY</button>
         </div>
-
         <div class="wheel-legend">
           <h2>📜 Các ô trên vòng quay</h2>
           <div id="wheelLegend"></div>
         </div>
       </div>
-
       <div id="wheelResult" class="result-box">Chưa có kết quả.</div>
       <div id="confetti" class="confetti" aria-hidden="true"></div>
     </section>
-
     <section id="random" class="page">
       <h1>🎯 Random người</h1>
       <p class="subtitle">Hệ thống ưu tiên các tổ chưa đạt tối thiểu 2 người được gọi.</p>
-
       <div id="teamStatus"></div>
       <button class="big-button" onclick="randomPerson()">🎯 CHỌN NGƯỜI</button>
       <div id="randomResult"></div>
-
       <h2>📜 Lịch sử</h2>
       <div id="history"></div>
     </section>
-
     <section id="score" class="page">
       <h1>🏆 Bảng điểm</h1>
       <div id="scoreBoard"></div>
     </section>
   </main>
 </div>
-
 <script src="app.js"></script>
+<script src="wheel-fix.js"></script>
 </body>
 </html>
