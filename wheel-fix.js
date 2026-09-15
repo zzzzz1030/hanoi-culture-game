@@ -1,5 +1,56 @@
-/* VÒNG QUAY - HIỂN THỊ Ô + KẾT QUẢ Ở GIỮA + HIỆU ỨNG NỔ */
+/* VÒNG QUAY - HIỂN THỊ ĐẦY ĐỦ + KẾT QUẢ Ở GIỮA + +10 CHO ĐỘI VỪA TRẢ LỜI ĐÚNG */
 (function(){
+  let currentQuestionTeam=null;
+  let lastCorrectTeam=null;
+
+  const originalRandomPerson=window.randomPerson;
+  window.randomPerson=function(){
+    const before=history.length;
+    originalRandomPerson();
+    if(history.length>before) currentQuestionTeam=history[history.length-1].team;
+  };
+
+  const originalAnswerQuestion=window.answerQuestion;
+  window.answerQuestion=function(i){
+    const q=questions[qi];
+    const correct=q && i===q.c;
+    if(correct && currentQuestionTeam) lastCorrectTeam=currentQuestionTeam;
+    originalAnswerQuestion(i);
+  };
+
+  const plusTen=wheelItems.find(it=>it.type==='addRandomTarget');
+  if(plusTen){
+    plusTen.label='🎁 +10\nĐỘI VỪA ĐÚNG';
+    plusTen.desc='Đội có thành viên vừa trả lời đúng câu hỏi nhận 10 điểm';
+  }
+
+  const originalApplyWheelItem=window.applyWheelItem;
+  window.applyWheelItem=function(item){
+    if(item && item.type==='addRandomTarget'){
+      const target=lastCorrectTeam || currentQuestionTeam;
+      const box=document.getElementById('wheelResult');
+      if(target){
+        scores[target]=clampScore(scores[target]+10);
+        save();
+        updateScore();
+        if(box){
+          box.textContent=`🎉 Tổ ${target} có thành viên vừa trả lời đúng và nhận +10 điểm!`;
+          box.classList.remove('result-win');
+          void box.offsetWidth;
+          box.classList.add('result-win');
+        }
+      }else if(box){
+        box.textContent='⚠️ Chưa xác định được đội vừa trả lời đúng.';
+        box.classList.remove('result-win');
+        void box.offsetWidth;
+        box.classList.add('result-win');
+      }
+      launchConfetti();
+      return;
+    }
+    originalApplyWheelItem(item);
+  };
+
   function renderWheel(){
     const wheel=document.getElementById('prizeWheel');
     const legend=document.getElementById('wheelLegend');
@@ -7,20 +58,14 @@
 
     const n=wheelItems.length;
     const slice=360/n;
-    const gradient=wheelItems.map((it,i)=>`${it.color} ${i*slice}deg ${(i+1)*slice}deg`).join(',');
-    wheel.style.background=`conic-gradient(${gradient})`;
-
+    wheel.style.background=`conic-gradient(${wheelItems.map((it,i)=>`${it.color} ${i*slice}deg ${(i+1)*slice}deg`).join(',')})`;
     wheel.innerHTML=wheelItems.map((it,i)=>{
       const angle=i*slice+slice/2;
-      return `<div class="wheel-label wheel-label-fixed" style="--angle:${angle}deg"><span>${it.label.replace(/\n/g,'<br>')}</span></div>`;
+      return `<div class="wheel-label wheel-label-fixed" style="--angle:${angle}deg;--counter-angle:-${angle}deg"><span>${it.label.replace(/\n/g,'<br>')}</span></div>`;
     }).join('');
 
     if(legend){
-      legend.innerHTML=wheelItems.map(it=>`
-        <div class="legend-item">
-          <span class="legend-dot" style="background:${it.color}"></span>
-          <div><b>${it.label.replace(/\n/g,' ')}</b><small>${it.desc}</small></div>
-        </div>`).join('');
+      legend.innerHTML=wheelItems.map(it=>`<div class="legend-item"><span class="legend-dot" style="background:${it.color}"></span><div><b>${it.label.replace(/\n/g,' ')}</b><small>${it.desc}</small></div></div>`).join('');
     }
   }
 
@@ -30,8 +75,7 @@
     for(let i=0;i<28;i++){
       const p=document.createElement('i');
       p.style.setProperty('--angle',(360/28*i)+'deg');
-      p.style.setProperty('--distance',(120+Math.random()*55)+'px');
-      p.style.setProperty('--delay',(Math.random()*.08)+'s');
+      p.style.setProperty('--distance',(120+Math.random()*65)+'px');
       burst.appendChild(p);
     }
     wheel.appendChild(burst);
@@ -65,9 +109,7 @@
     const fullTurns=6+Math.floor(Math.random()*3);
     rotation+=360*fullTurns+normalized;
 
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      wheel.style.transform=`rotate(${rotation}deg)`;
-    }));
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{wheel.style.transform=`rotate(${rotation}deg)`;}));
 
     setTimeout(()=>{
       const item=wheelItems[index];
@@ -82,11 +124,7 @@
 
       const center=document.createElement('div');
       center.className='wheel-center-result';
-      center.innerHTML=`
-        <div class="wheel-result-title">🎯 KẾT QUẢ</div>
-        <div class="wheel-result-label">${item.label.replace(/\n/g,'<br>')}</div>
-        <div class="wheel-result-effect">${effectText}</div>
-      `;
+      center.innerHTML=`<div class="wheel-result-title">🎯 KẾT QUẢ</div><div class="wheel-result-label">${item.label.replace(/\n/g,'<br>')}</div><div class="wheel-result-effect">${effectText}</div>`;
       wheel.appendChild(center);
       burst(wheel);
       result.classList.add('result-win');
@@ -95,58 +133,21 @@
 
   const style=document.createElement('style');
   style.textContent=`
-    .wheel-label-fixed{
-      position:absolute;left:50%;top:50%;width:112px;height:58px;
-      margin-left:-56px;margin-top:-29px;
-      display:flex;align-items:center;justify-content:center;
-      transform:rotate(var(--angle)) translateY(-125px);
-      transform-origin:50% 50%;
-      text-align:center;line-height:1.12;
-      font-size:12px;font-weight:900;color:#fff;
-      z-index:6;pointer-events:none;text-shadow:0 2px 4px #000;
-    }
-    .wheel-label-fixed span{display:block;transform:rotate(calc(var(--angle) * -1));max-width:108px}
-    .wheel-center-result{
-      position:absolute;z-index:20;left:50%;top:50%;
-      width:158px;height:158px;transform:translate(-50%,-50%);
-      border-radius:50%;display:flex;flex-direction:column;
-      align-items:center;justify-content:center;text-align:center;padding:14px;
-      background:radial-gradient(circle at 35% 28%,#4b5d91 0,#1a2443 46%,#0b1124 100%);
-      border:6px solid #fff;
-      box-shadow:0 0 0 5px rgba(124,92,255,.25),0 0 42px rgba(124,92,255,.95),0 12px 30px rgba(0,0,0,.7);
-      animation:centerExplosion .78s cubic-bezier(.16,1.3,.3,1) both;
-      pointer-events:none;
-    }
-    .wheel-result-title{font-size:14px;font-weight:950;letter-spacing:1px;color:#eef1ff;text-shadow:0 2px 5px #000;line-height:1.1}
-    .wheel-result-label{font-size:26px;font-weight:1000;line-height:1.02;margin:7px 0;text-shadow:0 3px 8px #000;white-space:nowrap}
-    .wheel-result-effect{font-size:10px;font-weight:800;line-height:1.15;color:#fff;max-width:138px;text-shadow:0 2px 4px #000}
-    @keyframes centerExplosion{
-      0%{opacity:0;transform:translate(-50%,-50%) scale(.05);filter:brightness(2)}
-      30%{opacity:1;transform:translate(-50%,-50%) scale(1.23);filter:brightness(1.7)}
-      52%{transform:translate(-50%,-50%) scale(.91)}
-      75%{transform:translate(-50%,-50%) scale(1.07)}
-      100%{opacity:1;transform:translate(-50%,-50%) scale(1);filter:brightness(1)}
-    }
+    .wheel{position:relative;overflow:hidden}
+    .wheel-label-fixed{position:absolute;left:50%;top:50%;width:112px;height:58px;margin-left:-56px;margin-top:-29px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:11px;font-weight:900;line-height:1.08;pointer-events:none;transform:rotate(var(--angle)) translateY(-125px)!important;transform-origin:center center;text-shadow:0 2px 4px #000;z-index:3}
+    .wheel-label-fixed span{display:block;transform:rotate(var(--counter-angle));white-space:nowrap}
+    .wheel::after{z-index:4}
+    .wheel-center-result{position:absolute;z-index:20;left:50%;top:50%;width:148px;height:148px;transform:translate(-50%,-50%);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:12px;background:radial-gradient(circle at 35% 25%,#495786 0,#1a2342 45%,#0b1125 100%);border:6px solid #fff;box-shadow:0 0 0 5px rgba(124,92,255,.25),0 0 45px rgba(124,92,255,.95),0 10px 30px rgba(0,0,0,.7);animation:centerExplosion .78s cubic-bezier(.15,1.25,.3,1) both;pointer-events:none}
+    .wheel-result-title{font-size:12px;font-weight:900;letter-spacing:1px;color:#e7ebff;text-shadow:0 2px 5px #000;line-height:1.1}
+    .wheel-result-label{font-size:24px;font-weight:1000;line-height:1.02;margin:6px 0;text-shadow:0 3px 7px #000;white-space:nowrap}
+    .wheel-result-effect{font-size:9px;font-weight:800;line-height:1.2;color:#fff;max-width:126px;text-shadow:0 2px 4px #000}
+    @keyframes centerExplosion{0%{opacity:0;transform:translate(-50%,-50%) scale(.05);filter:brightness(2)}30%{opacity:1;transform:translate(-50%,-50%) scale(1.2);filter:brightness(1.6)}55%{transform:translate(-50%,-50%) scale(.94)}78%{transform:translate(-50%,-50%) scale(1.05)}100%{opacity:1;transform:translate(-50%,-50%) scale(1);filter:brightness(1)}}
     .wheel-result-burst{position:absolute;z-index:19;left:50%;top:50%;width:1px;height:1px;pointer-events:none}
-    .wheel-result-burst i{
-      position:absolute;left:0;top:0;width:7px;height:30px;border-radius:4px;
-      background:#fff;box-shadow:0 0 12px rgba(255,255,255,.95);
-      transform-origin:50% 0;animation:burstRay .82s cubic-bezier(.1,.85,.2,1) var(--delay) both;
-    }
-    @keyframes burstRay{
-      0%{opacity:0;transform:rotate(var(--angle)) translateY(0) scale(.15)}
-      30%{opacity:1}
-      100%{opacity:0;transform:rotate(var(--angle)) translateY(calc(var(--distance) * -1)) scale(1)}
-    }
-    @media(max-width:700px){
-      .wheel-label-fixed{width:102px;margin-left:-51px;font-size:10px;transform:rotate(var(--angle)) translateY(-119px)}
-      .wheel-center-result{width:145px;height:145px}
-      .wheel-result-label{font-size:23px}
-      .wheel-result-effect{font-size:9px;max-width:123px}
-    }
+    .wheel-result-burst i{position:absolute;left:0;top:0;width:6px;height:26px;border-radius:4px;background:#fff;box-shadow:0 0 12px rgba(255,255,255,.95);transform-origin:50% 0;animation:burstRay .8s cubic-bezier(.1,.8,.2,1) both}
+    .wheel-result-burst i:nth-child(3n){background:#ffd166}.wheel-result-burst i:nth-child(3n+1){background:#27d6c5}
+    @keyframes burstRay{0%{opacity:0;transform:rotate(var(--angle)) translateY(0) scale(.15)}35%{opacity:1}100%{opacity:0;transform:rotate(var(--angle)) translateY(calc(var(--distance) * -1)) scale(1)}}
+    @media(max-width:700px){.wheel-label-fixed{transform:rotate(var(--angle)) translateY(-113px)!important}.wheel-center-result{width:138px;height:138px}.wheel-result-label{font-size:22px}.wheel-result-effect{font-size:8px;max-width:116px}}
   `;
   document.head.appendChild(style);
-
-  // app.js chạy buildWheel() trước file này, nên render lại để sửa vị trí nhãn chắc chắn.
   renderWheel();
 })();
